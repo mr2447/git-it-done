@@ -2,6 +2,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
+var languageButtonsEl = document.querySelector("#language-buttons");
 
 var formSubmitHandler = function(event) {
     event.preventDefault();
@@ -10,6 +11,7 @@ var formSubmitHandler = function(event) {
 
     if (username) {
         getUserRepos(username);
+        //clear old content
         nameInputEl.value = "";
     } else {
         alert("Please enter a GitHub username");
@@ -29,16 +31,16 @@ var getUserRepos = function(user) {
             displayRepos(data, user)
         });
     } else {
-        alert("Error: GitHub User Not FOund");
+        alert("Error: " + response.status);
     }
     })
-    .catch(function(error) {
+    .catch(function(_error) {
         //Notice this '.catch()' getting chained onto the end of the '.then()' method
         alert("Unable to connect to GitHub");
     });
 };
 
-userFormEl.addEventListener("submit", formSubmitHandler);
+
 
 var displayRepos = function(repos, searchTerm) {
     // check if api returned any repos 
@@ -91,3 +93,27 @@ var displayRepos = function(repos, searchTerm) {
     console.log(searchTerm);
 }
 
+function getFeaturedRepos(language) {
+    var apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+    fetch(apiUrl).then(function(response) {
+        if(response.ok) {
+            response.json().then(function(data) {
+                displayRepos(data.items, language);
+            });
+        } else {
+            alert('Error: GitHub User Not Found');
+        }
+    })
+}
+function buttonClickHandler (event) {
+    var language = event.target.getAttribute("data-language")
+    if (language) {
+        getFeaturedRepos(language);
+        //clear old content
+        repoContainerEl.textContent = ""
+    }
+}
+//add event listener t oforms
+userFormEl.addEventListener("submit", formSubmitHandler);
+//add event listener to buttons
+languageButtonsEl.addEventListener("click", buttonClickHandler);
